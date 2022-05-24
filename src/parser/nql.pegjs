@@ -113,104 +113,6 @@ sql_stmt =
 //  { return { explain: flatstr(explain),
 //             stmt: stmt } }
 
-alter_table_stmt =
-  ( ( ALTER TABLE table_ref )
-    ( RENAME TO new_table_name )
-    ( ADD ( COLUMN )? column_def ) )
-
-analyze_stmt =
-  ( ANALYZE ( database_name
-            / table_or_index_name
-            / ( database_name dot table_or_index_name ) )? )
-
-attach_stmt =
-  ( ATTACH ( DATABASE )? expr AS database_name )
-
-begin_stmt =
-  ( BEGIN ( DEFERRED / IMMEDIATE / EXCLUSIVE )? ( TRANSACTION )? )
-
-commit_stmt =
-( ( COMMIT / END ) ( TRANSACTION )? )
-
-rollback_stmt =
-( ROLLBACK ( TRANSACTION )? ( TO ( SAVEPOINT )? savepoint_name )? )
-
-savepoint_stmt =
-( SAVEPOINT savepoint_name )
-
-release_stmt =
-( RELEASE ( SAVEPOINT )? savepoint_name )
-
-create_index_stmt =
-( ( CREATE ( UNIQUE )? INDEX ( IF NOT EXISTS )? ) ( ( database_name dot )? index_name ON table_name lparen ( indexed_column comma )+ rparen ) )
-
-indexed_column =
-  ( column_name ( COLLATE collation_name )? ( ASC / DESC )? )
-
-create_table_stmt =
-  ( CREATE ( TEMP / TEMPORARY )? TABLE ( IF NOT EXISTS )? )
-  ( table_ref
-    ( lparen ( column_def comma )+ ( comma table_constraint )+ rparen )
-    ( AS select_stmt ) )
-
-column_def =
-  ( column_name ( type_name )? ( column_constraint )+ )
-
-type_name =
-  ( name )+
-  ( ( lparen signed_number rparen )
-  / ( lparen signed_number comma signed_number rparen ) )?
-
-column_constraint =
-  ( ( CONSTRAINT name )?
-    ( ( PRIMARY KEY ( ASC / DESC )? conflict_clause ( AUTOINCREMENT )? )
-    / ( NOT NULL conflict_clause )
-    / ( UNIQUE conflict_clause )
-    / ( CHECK lparen expr rparen )
-    / ( DEFAULT ( signed_number / literal_value / ( lparen expr rparen ) ) )
-    / ( COLLATE collation_name )
-    / foreign_key_clause ) )
-
-signed_number =
-  ( ( plus / minus )? numeric_literal )
-
-table_constraint =
-( ( CONSTRAINT name )? ( ( ( ( PRIMARY KEY ) / UNIQUE ) lparen ( indexed_column comma )+ rparen conflict_clause ) / ( CHECK lparen expr rparen ) / ( FOREIGN KEY lparen ( column_name comma )+ rparen foreign_key_clause ) ) )
-
-foreign_key_clause =
-  ( ( REFERENCES foreign_table ( lparen ( column_name comma )+ rparen )? )
-    ( ( ( ON ( DELETE / UPDATE )
-             ( ( SET NULL )
-             / ( SET DEFAULT )
-             / CASCADE
-             / RESTRICT
-             / ( NO ACTION ) ) )
-         / ( MATCH name ) )+ )?
-    ( ( NOT )? DEFERRABLE ( ( INITIALLY DEFERRED ) / ( INITIALLY IMMEDIATE ) )? )? )
-
-conflict_clause =
-( ( ON CONFLICT ( ROLLBACK / ABORT / FAIL / IGNORE / REPLACE ) ) )?
-
-create_trigger_stmt =
-  ( ( CREATE ( TEMP / TEMPORARY )? TRIGGER ( IF NOT EXISTS )? )
-    ( ( database_name dot )? trigger_name ( BEFORE / AFTER / ( INSTEAD OF ) )? )
-    ( ( DELETE
-      / INSERT
-      / ( UPDATE ( OF ( column_name comma )+ )? ) ) ON table_name )
-    ( ( FOR EACH ROW )? ( WHEN expr )? )
-    ( BEGIN ( ( update_stmt
-              / insert_stmt
-              / delete_stmt
-              / select_stmt ) semicolon )+ END ) )
-
-create_view_stmt =
-  ( ( CREATE ( TEMP / TEMPORARY )? VIEW ( IF NOT EXISTS )? )
-    ( ( database_name dot )? view_name AS select_stmt ) )
-
-create_virtual_table_stmt =
-  ( ( CREATE VIRTUAL TABLE table_ref )
-    ( USING module_name ( lparen ( module_argument comma )+ rparen )? ) )
-
 delete_stmt =
   ( DELETE FROM qualified_table_name ( WHERE expr )? )
 
@@ -219,20 +121,8 @@ delete_stmt_limited =
     ( ( ( ORDER BY ( ordering_term comma )+ )?
         ( LIMIT expr ( ( OFFSET / comma ) expr )? ) ) )? )
 
-detach_stmt =
-( DETACH ( DATABASE )? database_name )
-
-drop_index_stmt =
-( DROP INDEX ( IF EXISTS )? ( database_name dot )? index_name )
-
 drop_table_stmt =
   ( DROP TABLE ( IF EXISTS )? table_ref )
-
-drop_trigger_stmt =
-( DROP TRIGGER ( IF EXISTS )? ( database_name dot )? trigger_name )
-
-drop_view_stmt =
-( DROP VIEW ( IF EXISTS )? ( database_name dot )? view_name )
 
 value =
   v: ( whitespace
@@ -301,16 +191,6 @@ insert_stmt =
         ( ( VALUES lparen ( expr comma )+ rparen )
           / select_stmt ) )
       / ( DEFAULT VALUES ) ) )
-
-pragma_stmt =
-  ( PRAGMA ( database_name dot )? pragma_name
-    ( ( equal pragma_value ) / ( lparen pragma_value rparen ) )? )
-
-pragma_value =
-( signed_number / name / string_literal )
-
-reindex_stmt =
-  ( REINDEX collation_name ( table_ref index_name ) )
 
 select_stmt =
   ( select_cores: ( select_core
@@ -465,9 +345,6 @@ column_ref =
        ( x: column_name
          { return { column: x } } ) )
   { return merge(r[1], r[0]) }
-
-vacuum_stmt =
-VACUUM
 
 comment_syntax =
   ( ( minusminus ( anything_except_newline )+ ( newline / end_of_input ) )
